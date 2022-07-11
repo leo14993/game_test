@@ -6,18 +6,13 @@ from src.models.ownership import Ownership
 from src.models.player import Player
 
 
-class MyTestCase(TestCase):
+class PlayerTestCase(TestCase):
     _player_impulsivo = Player(1, 'impulsivo')
     _player_exigente = Player(2, 'exigente')
     _player_cauteloso = Player(3, 'cauteloso')
     _player_aleatorio = Player(4, 'aleatório')
 
-    def setUp(self):
-        pass
-        # self.player_id = 1
-        # self.player_profiles = ['impulsivo', 'exigente', 'cauteloso', 'aleatório']
-
-    @patch('src.models.ownership.Ownership')
+    @patch('src.models.player.Ownership')
     def test_player_lost_then_lost_ownerships_and_status_is_false(self, ownership_mock):
         # arrange
         ownership_mock.owner = self._player_aleatorio.id
@@ -92,7 +87,7 @@ class MyTestCase(TestCase):
         self.assertFalse(expected_answer_2)
         self.assertFalse(expected_answer_3)
 
-    @patch('src.models.ownership.Ownership')
+    @patch('src.models.player.Ownership')
     @patch('src.models.player.Player.demanding_player')
     @patch('src.models.player.Player.cautious_player')
     @patch('src.models.player.Player.random_player')
@@ -119,7 +114,7 @@ class MyTestCase(TestCase):
         cautious_player_mock.assert_not_called()
         demanding_player_mock.assert_not_called()
 
-    @patch('src.models.ownership.Ownership')
+    @patch('src.models.player.Ownership')
     @patch('src.models.player.Player.demanding_player')
     @patch('src.models.player.Player.cautious_player')
     @patch('src.models.player.Player.random_player')
@@ -146,7 +141,7 @@ class MyTestCase(TestCase):
         demanding_player_mock.assert_not_called()
         self.assertEqual(self._player_impulsivo.cash, expected_cash_after_buy)
 
-    @patch('src.models.ownership.Ownership')
+    @patch('src.models.player.Ownership')
     @patch('src.models.player.Player.demanding_player')
     @patch('src.models.player.Player.cautious_player')
     @patch('src.models.player.Player.random_player')
@@ -174,7 +169,7 @@ class MyTestCase(TestCase):
         demanding_player_mock.assert_called_once_with(rent_value)
         self.assertEqual(self._player_exigente.cash, expected_cash_after_buy)
 
-    @patch('src.models.ownership.Ownership')
+    @patch('src.models.player.Ownership')
     @patch('src.models.player.Player.demanding_player')
     @patch('src.models.player.Player.cautious_player')
     @patch('src.models.player.Player.random_player')
@@ -202,7 +197,7 @@ class MyTestCase(TestCase):
         demanding_player_mock.assert_called_once_with(rent_value)
         self.assertEqual(self._player_exigente.cash, expected_cash_after_buy)
 
-    @patch('src.models.ownership.Ownership')
+    @patch('src.models.player.Ownership')
     @patch('src.models.player.Player.demanding_player')
     @patch('src.models.player.Player.cautious_player')
     @patch('src.models.player.Player.random_player')
