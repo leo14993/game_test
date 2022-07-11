@@ -1,14 +1,15 @@
 import random
-from typing import List
+from statistics import mean
+from typing import List, Dict
 
 from src.models.ownership import Ownership
-from src.models.player import Player
+from src.models.player import Player, IMPULSIVE, DEMANDING, CAUTIOUS, RANDOM
 
 
 class GameTasks:
 
-    _min_ownership_value: int = 40
-    _max_ownership_value: int = 200
+    _min_ownership_value: int = 80
+    _max_ownership_value: int = 300
     _steps_ownership_value: int = 20
     _board_size: int = 20
     _dice_faces: int = 6
@@ -29,6 +30,24 @@ class GameTasks:
         return board
 
     @staticmethod
+    def reset_board(ownerships: List[Ownership]) -> List[Ownership]:
+        reseted_list = []
+        for ownership in ownerships:
+            ownership.owner = None
+            reseted_list.append(ownership)
+
+        return reseted_list
+
+    def remove_player_from_ownerships(self, ownerships: List[Ownership], player_id) -> List[Ownership]:
+        reseted_list = []
+        for ownership in ownerships:
+            if ownership.owner == player_id:
+                ownership.owner = None
+            reseted_list.append(ownership)
+
+        return reseted_list
+
+    @staticmethod
     def make_players() -> List[Player]:
         profiles = [
             'impulsivo',
@@ -45,21 +64,36 @@ class GameTasks:
     def pay_rent(player: Player, ownership: Ownership) -> bool:
         return ownership.owner and ownership.owner != player.id
 
+    @staticmethod
+    def get_best_player(players_victories: Dict) -> str:
+        new_dict = {}
+        for key, value in players_victories.items():
+            new_dict[value] = key
+
+        return new_dict[max(new_dict.keys())]
+
     def run(self):
 
+        players_victories = {
+            IMPULSIVE: 0,
+            DEMANDING: 0,
+            CAUTIOUS: 0,
+            RANDOM: 0
+        }
+
+        timeout = 0
+        simulation_rolls = []
         ownerships = self.make_board()
         board_size = len(ownerships)
-        players = self.make_players()
-        random.shuffle(players)
 
-        timeout = []
-        simulation_rolls = []
+        for simulation in range(300):
 
-        for simulation in range(301):
+            players = self.make_players()
+            random.shuffle(players)
 
+            game = True
             rolls = 0
-
-            for roll in range(1001):
+            while game:
                 rolls += 1
 
                 for player in players:
@@ -74,17 +108,44 @@ class GameTasks:
                     ownership = ownerships[player.position]
 
                     must_buy_rent = self.pay_rent(player, ownership)
-                    if self.pay_rent(player, ownership):
+
+                    if must_buy_rent:
                         owner = list(filter(lambda player: player.id == ownership.owner, players))[0]
                         rent = ownership.rent_value
                         player.cash -= rent
                         if player.cash < 0:
                             player.lost()
                             rent = rent + player.cash
+                            ownerships = self.remove_player_from_ownerships(ownerships, player.id)
 
                         owner.cash += rent
 
+                        if not player.status:
+                            players.remove(player)
+
                     player.buy_property(ownerships[player.position])
 
-                    # buy_rent(player, owner)
+                if len(players) == 1:
+                    ownerships = self.reset_board(ownerships)
+                    game = False
+                    players_victories[players[0].player_profile] += 1
+                elif rolls == 100:
+                    ownerships = self.reset_board(ownerships)
+                    game = False
+                    timeout += 1
+
             simulation_rolls.append(rolls)
+
+        best_player = self.get_best_player(players_victories)
+
+        print(f'Partidas terminadas por Timeout: {timeout}')
+        print(f'Média de turnos de uma partida: {round(mean(simulation_rolls))}')
+        print(f'Taxa de vitórias por jogador')
+        partidas = 300 - timeout
+        for player, vicory in players_victories.items():
+            print(f' {player}: {round(vicory/partidas * 100,2)}%')
+        print(f'Melhor comportamento: {best_player}')
+
+        #Todo: Ficou faltando organizar isso em métodos,
+        # fazer os testes unitários e aumentar o coverage para pelo menos 80%
+        # :Todo

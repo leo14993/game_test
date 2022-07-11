@@ -27,7 +27,7 @@ class MainTestCase(TestCase):
         current_board = self._game_tasks.make_board()
 
         # assert
-        random_mock.randrange.assert_called_with(40, 200, 20)
+        random_mock.randrange.assert_called_with(80, 300, 20)
         for ownership in current_board:
             self.assertEqual(ownership.value, ownership_value)
 
